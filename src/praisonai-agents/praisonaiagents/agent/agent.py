@@ -33,6 +33,27 @@ from ..main import (
 import inspect
 import uuid
 
+def get_model_from_env():
+    """Get model name from environment variables with fallback priority."""
+    model_vars = [
+        'MODEL_NAME',
+        'LLM_MODEL', 
+        'OPENAI_MODEL_NAME',
+        'OPENROUTER_MODEL_NAME',
+        'ANTHROPIC_MODEL_NAME',
+        'GOOGLE_MODEL_NAME'
+    ]
+    
+    for var in model_vars:
+        model = os.getenv(var)
+        if model:
+            return model
+    
+    raise ValueError(
+        "No model specified. Please set one of the following environment variables: "
+        f"{', '.join(model_vars)}"
+    )
+
 # Global variables for API server
 _server_started = {}  # Dict of port -> started boolean
 _registered_agents = {}  # Dict of port -> Dict of path -> agent_id
@@ -387,7 +408,7 @@ class Agent:
                     self.llm_instance = LLM(**llm_config)
                 else:
                     # Create LLM with model string and base_url
-                    model_name = llm or os.getenv('OPENAI_MODEL_NAME', 'gpt-4o')
+                    model_name = llm or get_model_from_env()
                     self.llm_instance = LLM(
                         model=model_name,
                         base_url=base_url,
@@ -442,7 +463,7 @@ class Agent:
                 ) from e
         # Otherwise, fall back to OpenAI environment/name
         else:
-            self.llm = llm or os.getenv('OPENAI_MODEL_NAME', 'gpt-4o')
+            self.llm = llm or get_model_from_env()
         # Handle tools parameter - ensure it's always a list
         if callable(tools):
             # If a single function/callable is passed, wrap it in a list
@@ -479,7 +500,7 @@ class Agent:
         self.min_reflect = min_reflect
         self.reflect_prompt = reflect_prompt
         # Use the same model selection logic for reflect_llm
-        self.reflect_llm = reflect_llm or os.getenv('OPENAI_MODEL_NAME', 'gpt-4o')
+        self.reflect_llm = reflect_llm or get_model_from_env()
         self.console = Console()  # Create a single console instance for the agent
         
         # Initialize system prompt
@@ -552,7 +573,7 @@ Your Goal: {self.goal}
             return self.llm
         else:
             # Default fallback
-            return "gpt-4o"
+            return get_model_from_env()
 
     def _process_knowledge(self, knowledge_item):
         """Process and store knowledge from a file path, URL, or string."""
@@ -2676,4 +2697,4 @@ Output MUST be JSON with 'reflection' and 'satisfactory'.
             return None
         else:
             display_error(f"Invalid protocol: {protocol}. Choose 'http' or 'mcp'.")
-            return None 
+            return None

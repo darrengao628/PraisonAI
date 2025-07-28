@@ -38,6 +38,27 @@ class AutoAgentsConfig(BaseModel):
     process_type: str
     agents: List[AgentConfig]
 
+def get_model_from_env():
+    """Get model name from environment variables with fallback priority."""
+    model_vars = [
+        'MODEL_NAME',
+        'LLM_MODEL', 
+        'OPENAI_MODEL_NAME',
+        'OPENROUTER_MODEL_NAME',
+        'ANTHROPIC_MODEL_NAME',
+        'GOOGLE_MODEL_NAME'
+    ]
+    
+    for var in model_vars:
+        model = os.getenv(var)
+        if model:
+            return model
+    
+    raise ValueError(
+        "No model specified. Please set one of the following environment variables: "
+        f"{', '.join(model_vars)}"
+    )
+
 class AutoAgents(PraisonAIAgents):
     def __init__(
         self,
@@ -92,7 +113,7 @@ class AutoAgents(PraisonAIAgents):
         self.self_reflect = self_reflect
         self.max_reflect = max_reflect
         self.min_reflect = min_reflect
-        self.llm = llm or os.getenv('OPENAI_MODEL_NAME', 'gpt-4o')
+        self.llm = llm or get_model_from_env()
         self.function_calling_llm = function_calling_llm
         self.respect_context_window = respect_context_window
         self.code_execution_mode = code_execution_mode

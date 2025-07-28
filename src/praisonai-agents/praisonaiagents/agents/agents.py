@@ -21,6 +21,27 @@ try:
 except ImportError:
     _token_collector = None
 
+def get_model_from_env():
+    """Get model name from environment variables with fallback priority."""
+    model_vars = [
+        'MODEL_NAME',
+        'LLM_MODEL', 
+        'OPENAI_MODEL_NAME',
+        'OPENROUTER_MODEL_NAME',
+        'ANTHROPIC_MODEL_NAME',
+        'GOOGLE_MODEL_NAME'
+    ]
+    
+    for var in model_vars:
+        model = os.getenv(var)
+        if model:
+            return model
+    
+    raise ValueError(
+        "No model specified. Please set one of the following environment variables: "
+        f"{', '.join(model_vars)}"
+    )
+
 # Task status constants
 class TaskStatus(Enum):
     """Enumeration for task status values to ensure consistency"""
@@ -163,7 +184,7 @@ class PraisonAIAgents:
         self.name = name  # Store the name for the Agents collection
         
         # Check for manager_llm in environment variable if not provided
-        self.manager_llm = manager_llm or os.getenv('OPENAI_MODEL_NAME', 'gpt-4o')
+        self.manager_llm = manager_llm or get_model_from_env()
         
         # Set logger level based on verbose
         if verbose >= 5:

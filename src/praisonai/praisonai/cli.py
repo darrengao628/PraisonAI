@@ -8,7 +8,10 @@ import os
 import time
 from rich import print
 from dotenv import load_dotenv
+
+# Load environment variables at module level
 load_dotenv()
+
 import shutil
 import subprocess
 import logging
