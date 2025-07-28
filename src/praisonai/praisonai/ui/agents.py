@@ -563,8 +563,6 @@ async def ui_run_praisonai(config, topic, tools_dict):
 # -----------------------------------------------------------------------------
 
 tools_dict = load_tools_from_tools_py()
-print(f"[DEBUG] tools_dict: {tools_dict}")
-
 # Load agent config (default) from 'agents.yaml'
 with open(agent_file, 'r') as f:
     config = yaml.safe_load(f)

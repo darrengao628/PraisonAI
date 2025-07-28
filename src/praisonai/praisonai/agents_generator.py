@@ -7,7 +7,7 @@ from rich import print
 from dotenv import load_dotenv,find_dotenv
 
 # Load environment variables at module level
-load_dotenv(find_dotenv(), override=True)# 🔧 ADD THIS LINE!
+load_dotenv(find_dotenv(), override=True)
 
 from .auto import AutoGenerator
 from .inbuilt_tools import *
@@ -616,65 +616,41 @@ class AgentsGenerator:
             agent_tools = [tools_dict[tool] for tool in details.get('tools', []) 
                          if tool in tools_dict]
             
-            # 🔍 DEBUG: Environment variable inspection
-            print(f"🔍 DEBUG: Environment variables before LLM creation:")
-            print(f"   - OPENAI_MODEL_NAME: {os.environ.get('OPENAI_MODEL_NAME')}")
-            print(f"   - MODEL_NAME: {os.environ.get('MODEL_NAME')}")
-            print(f"   - OPENROUTER_API_KEY: {os.environ.get('OPENROUTER_API_KEY')}")
-            print(f"   - OR_API_KEY: {os.environ.get('OR_API_KEY')}")
-            print(f"   - OPENROUTER_API_BASE: {os.environ.get('OPENROUTER_API_BASE')}")
-            
             # Configure LLM
             llm_model = details.get('llm')
-            print(f"🔍 DEBUG: llm_model from YAML: {llm_model}")
             
             if llm_model:
                 model_to_use = llm_model.get("model") or os.environ.get("MODEL_NAME") or "openai/gpt-4o-mini"
-                print(f"🔍 DEBUG: Using llm_model branch - model_to_use: {model_to_use}")
                 llm = PraisonAIModel(
                     model=model_to_use,
                     base_url=self.config_list[0].get('base_url') if self.config_list else None,
                     api_key=self.config_list[0].get('api_key') if self.config_list else None
                 ).get_model()
             else:
-                # 🚨 THIS IS THE PROBLEM AREA!
                 model_to_use = os.environ.get("OPENAI_MODEL_NAME") or os.environ.get("MODEL_NAME") or "openai/gpt-4o-mini"
-                print(f"🔍 DEBUG: Using else branch (NO llm in YAML) - model_to_use: {model_to_use}")
-                print(f"🔍 DEBUG: ⚠️  BEFORE FIX: This was missing the model parameter!")
                 llm = PraisonAIModel(
-                    model=model_to_use,  # 🔧 ADDED: This was missing!
+                    model=model_to_use,
                     base_url=self.config_list[0].get('base_url') if self.config_list else None,
                     api_key=self.config_list[0].get('api_key') if self.config_list else None
                 ).get_model()
 
             # Configure function calling LLM
             function_calling_llm_model = details.get('function_calling_llm')
-            print(f"🔍 DEBUG: function_calling_llm_model from YAML: {function_calling_llm_model}")
             
             if function_calling_llm_model:
                 fc_model_to_use = function_calling_llm_model.get("model") or os.environ.get("MODEL_NAME") or "openai/gpt-4o-mini"
-                print(f"🔍 DEBUG: Using function_calling_llm_model branch - fc_model_to_use: {fc_model_to_use}")
                 function_calling_llm = PraisonAIModel(
                     model=fc_model_to_use,
                     base_url=self.config_list[0].get('base_url') if self.config_list else None,
                     api_key=self.config_list[0].get('api_key') if self.config_list else None
                 ).get_model()
             else:
-                # 🚨 THIS IS THE SECOND PROBLEM AREA!
                 fc_model_to_use = os.environ.get("OPENAI_MODEL_NAME") or os.environ.get("MODEL_NAME") or "openai/gpt-4o-mini"
-                print(f"🔍 DEBUG: Using else branch (NO function_calling_llm in YAML) - fc_model_to_use: {fc_model_to_use}")
-                print(f"🔍 DEBUG: ⚠️  BEFORE FIX: This was also missing the model parameter!")
                 function_calling_llm = PraisonAIModel(
-                    model=fc_model_to_use,  # 🔧 ADDED: This was missing too!
+                    model=fc_model_to_use,
                     base_url=self.config_list[0].get('base_url') if self.config_list else None,
                     api_key=self.config_list[0].get('api_key') if self.config_list else None
                 ).get_model()
-            
-            # 🔍 DEBUG: Final environment variable check
-            print(f"🔍 DEBUG: Environment variables AFTER LLM creation:")
-            print(f"   - OR_API_KEY: {os.environ.get('OR_API_KEY')}")
-            print(f"   - OPENROUTER_API_BASE: {os.environ.get('OPENROUTER_API_BASE')}")
-            print(f"   - OPENROUTER_API_KEY: {os.environ.get('OPENROUTER_API_KEY')}")
 
             # Create CrewAI agent
             agent = Agent(

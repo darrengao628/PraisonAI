@@ -45,50 +45,40 @@ class PraisonAIModel:
             api_key (str, optional): The explicit API key to use. Takes precedence over environment variables. Defaults to None.
         """
         self.model =  model or os.getenv("OPENAI_MODEL_NAME", "gpt-4o-mini")
-        print(f"🔍 DEBUG: PraisonAIModel.__init__ - Original model: {self.model}")
         
         if self.model.startswith("openai/"):
             self.api_key_var = "OPENAI_API_KEY"
             self.base_url = base_url or "https://api.openai.com/v1"
             self.model_name = self.model.replace("openai/", "")
-            print(f"🔍 DEBUG: OpenAI model - stripped to: {self.model_name}")
         elif self.model.startswith("groq/"):
             self.api_key_var = "GROQ_API_KEY"
             self.base_url = base_url or "https://api.groq.com/openai/v1"
             self.model_name = self.model.replace("groq/", "")
-            print(f"🔍 DEBUG: Groq model - stripped to: {self.model_name}")
         elif self.model.startswith("cohere/"):
             self.api_key_var = "COHERE_API_KEY"
             self.base_url = ""
             self.model_name = self.model.replace("cohere/", "")
-            print(f"🔍 DEBUG: Cohere model - stripped to: {self.model_name}")
         elif self.model.startswith("ollama/"):
             self.api_key_var = "OLLAMA_API_KEY"
             self.base_url = base_url or "http://localhost:11434/v1"
             self.model_name = self.model.replace("ollama/", "")
-            print(f"🔍 DEBUG: Ollama model - stripped to: {self.model_name}")
         elif self.model.startswith("anthropic/"):
             self.api_key_var = "ANTHROPIC_API_KEY"
             self.base_url = ""
             self.model_name = self.model.replace("anthropic/", "")
-            print(f"🔍 DEBUG: Anthropic model - stripped to: {self.model_name}")
         elif self.model.startswith("google/"):
             self.api_key_var = "GOOGLE_API_KEY"
             self.base_url = ""
             self.model_name = self.model.replace("google/", "")
-            print(f"🔍 DEBUG: Google model - stripped to: {self.model_name}")
         elif self.model.startswith("openrouter/"):
             self.api_key_var = "OPENROUTER_API_KEY"
             self.base_url = base_url or "https://openrouter.ai/api/v1"
             self.model_name = self.model.replace("openrouter/", "")
-            print(f"🔍 DEBUG: OpenRouter model - STRIPPED from '{self.model}' to '{self.model_name}' ⚠️")
         else: 
             self.api_key_var = api_key_var or "OPENAI_API_KEY" 
             self.base_url = base_url or os.environ.get("OPENAI_API_BASE") or os.environ.get("OPENAI_BASE_URL") or "https://api.openai.com/v1"
             self.model_name = self.model
-            print(f"🔍 DEBUG: Default case - model_name: {self.model_name}")
             
-        print(f"🔍 DEBUG: Final values - self.model: '{self.model}', self.model_name: '{self.model_name}'")
         logger.debug(f"Initialized PraisonAIModel with model {self.model_name}, api_key_var {self.api_key_var}, and base_url {self.base_url}")
 
         # Get API key from environment
@@ -110,7 +100,6 @@ class PraisonAIModel:
 
 
     def get_model(self):
-        print(f"🔍 DEBUG: get_model() called - self.model: '{self.model}', self.model_name: '{self.model_name}'")
         if self.model.startswith("google/"):
             if GOOGLE_GENAI_AVAILABLE:
                 return ChatGoogleGenerativeAI(
@@ -145,9 +134,8 @@ class PraisonAIModel:
                     "Please install with 'pip install langchain-anthropic'"
                 )
         elif self.model.startswith("openrouter/"):
-            print(f"🔍 DEBUG: OpenRouter branch - using self.model: '{self.model}' for ChatOpenAI")
             return ChatOpenAI(
-                model=self.model,  # This should have the openrouter/ prefix
+                model=self.model,
                 api_key=self.api_key,
                 base_url=self.base_url,
                 temperature=0
@@ -163,12 +151,3 @@ class PraisonAIModel:
                 "Required Langchain Integration 'langchain-openai' not found. "
                 "Please install with 'pip install langchain-openai'"
             )
-        # Add these debug prints right before the return statement in get_model() method (around line 166)
-        print(f"🔍 DEBUG: get_model() - About to return model. Final check:")
-        print(f"🔍 DEBUG: get_model() - self.model: '{self.model}', self.model_name: '{self.model_name}'")
-        print(f"🔍 DEBUG: get_model() - Returning: {llm}")
-        if hasattr(llm, 'model_name'):
-            print(f"🔍 DEBUG: get_model() - llm.model_name: '{llm.model_name}'")
-        if hasattr(llm, 'model'):
-            print(f"🔍 DEBUG: get_model() - llm.model: '{llm.model}'")
-        print(f"🔍 DEBUG: get_model() - llm type: {type(llm)}")
